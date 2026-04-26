@@ -38,7 +38,7 @@
 <textarea id="input" placeholder="貼上訂單..."></textarea>
 
 <br>
-<button onclick="parse()">整理訂單</button>
+<button onclick="parseOrder()">整理訂單</button>
 
 <div class="result" id="output"></div>
 
@@ -70,6 +70,26 @@ function parse() {
   document.getElementById("output").innerHTML = html;
 }
 </script>
+<script>
+function parseOrder() {
+  const text = document.querySelector("textarea").value;
+  const lines = text.split("\n");
 
+  let result = "";
+
+  lines.forEach(line => {
+    const match = line.match(/(.+)\s+(.+)\+(\d+)/);
+    if (match) {
+      const name = match[1];
+      const item = match[2];
+      const qty = match[3];
+
+      result += `${name} 點了 ${item} x${qty}\n`;
+    }
+  });
+
+  document.querySelector("#result").innerText = result;
+}
+</script>
 </body>
 </html>
