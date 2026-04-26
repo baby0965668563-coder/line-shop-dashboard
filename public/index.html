@@ -28,6 +28,7 @@ button {
   border: none;
   border-radius: 8px;
   margin-right: 5px;
+  margin-top: 5px;
 }
 
 .card {
@@ -59,11 +60,20 @@ button {
 <br>
 <button onclick="parseOrder()">整理訂單</button>
 
+<!-- ⭐ 篩選按鈕 -->
+<div>
+  <button onclick="filterStatus('全部')">全部</button>
+  <button onclick="filterStatus('待對帳')">待對帳</button>
+  <button onclick="filterStatus('已結單')">已結單</button>
+  <button onclick="filterStatus('已寄出')">已寄出</button>
+</div>
+
 <div id="orders"></div>
 <div class="total" id="total"></div>
 
 <script>
 let allOrders = [];
+let currentFilter = "全部";
 
 async function parseOrder() {
   const res = await fetch("products.json");
@@ -101,6 +111,11 @@ function renderOrders(){
   let html = "";
 
   allOrders.forEach((o, i) => {
+
+    if(currentFilter !== "全部" && o.status !== currentFilter){
+      return;
+    }
+
     html += `
       <div class="card">
         <b>${o.name}</b><br>
@@ -121,6 +136,11 @@ function renderOrders(){
 
 function setStatus(index, status){
   allOrders[index].status = status;
+  renderOrders();
+}
+
+function filterStatus(status){
+  currentFilter = status;
   renderOrders();
 }
 </script>
