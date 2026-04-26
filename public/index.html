@@ -3,51 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>訂單系統</title>
 
 <style>
-body {
-  font-family: Arial;
-  background: #f5f5f5;
-  padding: 20px;
-}
-
-textarea {
-  width: 100%;
-  height: 120px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  padding: 10px;
-}
-
-button {
-  padding: 8px 12px;
-  background: #c8a97e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  margin-right: 5px;
-  margin-top: 5px;
-}
-
-.card {
-  background: white;
-  padding: 15px;
-  margin-top: 15px;
-  border-radius: 12px;
-}
-
-.status {
-  margin-top: 5px;
-  font-weight: bold;
-}
-
-.total {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 20px;
-}
+body { font-family: Arial; background:#f5f5f5; padding:20px; }
+textarea { width:100%; height:120px; border-radius:10px; padding:10px; }
+button { padding:8px 12px; background:#c8a97e; color:white; border:none; border-radius:8px; margin:5px 5px 5px 0; }
+.card { background:white; padding:15px; margin-top:15px; border-radius:12px; }
+.status { font-weight:bold; margin-top:5px; }
+.total { font-size:20px; font-weight:bold; margin-top:20px; }
 </style>
 </head>
 
@@ -55,12 +19,12 @@ button {
 
 <h2>📦 訂單整理</h2>
 
-<textarea id="input" placeholder="貼上訂單..."></textarea>
+<textarea id="input" placeholder="貼上訂單..."></textarea><br>
 
-<br>
 <button onclick="parseOrder()">整理訂單</button>
+<button onclick="saveOrders()">儲存訂單</button>
+<button onclick="clearOrders()">清空訂單</button>
 
-<!-- ⭐ 篩選按鈕 -->
 <div>
   <button onclick="filterStatus('全部')">全部</button>
   <button onclick="filterStatus('待對帳')">待對帳</button>
@@ -75,6 +39,14 @@ button {
 let allOrders = [];
 let currentFilter = "全部";
 
+window.onload = loadOrders;
+
+async function loadOrders() {
+  const res = await fetch("/api/orders");
+  allOrders = await res.json();
+  renderOrders();
+}
+
 async function parseOrder() {
   const res = await fetch("products.json");
   const prices = await res.json();
@@ -83,38 +55,38 @@ async function parseOrder() {
   const lines = text.split("\n");
 
   allOrders = [];
-  let total = 0;
 
   lines.forEach(line => {
     const match = line.match(/(.+)\s+(.+)\+(\d+)/);
-    if(match){
-      const name = match[1];
-      const item = match[2];
+    if (match) {
+      const name = match[1].trim();
+      const item = match[2].trim();
       const qty = parseInt(match[3]);
-
       const price = prices[item] || 0;
       const sum = price * qty;
 
-      total += sum;
-
       allOrders.push({
-        name, item, qty, sum, status: "待對帳"
+        name,
+        item,
+        qty,
+        sum,
+        status: "待對帳"
       });
     }
   });
 
+  await saveOrders();
   renderOrders();
-  document.getElementById("total").innerText = "總金額：" + total;
 }
 
-function renderOrders(){
+function renderOrders() {
   let html = "";
+  let total = 0;
 
   allOrders.forEach((o, i) => {
+    total += o.sum;
 
-    if(currentFilter !== "全部" && o.status !== currentFilter){
-      return;
-    }
+    if (currentFilter !== "全部" && o.status !== currentFilter) return;
 
     html += `
       <div class="card">
@@ -122,9 +94,8 @@ function renderOrders(){
         商品：${o.item}<br>
         數量：${o.qty}<br>
         金額：$${o.sum}<br>
-
         <div class="status">狀態：${o.status}</div>
-
+        <button onclick="setStatus(${i}, '待對帳')">待對帳</button>
         <button onclick="setStatus(${i}, '已結單')">已結單</button>
         <button onclick="setStatus(${i}, '已寄出')">已寄出</button>
       </div>
@@ -132,15 +103,31 @@ function renderOrders(){
   });
 
   document.getElementById("orders").innerHTML = html;
+  document.getElementById("total").innerText = "總金額：" + total;
 }
 
-function setStatus(index, status){
+async function setStatus(index, status) {
   allOrders[index].status = status;
+  await saveOrders();
   renderOrders();
 }
 
-function filterStatus(status){
+function filterStatus(status) {
   currentFilter = status;
+  renderOrders();
+}
+
+async function saveOrders() {
+  await fetch("/api/orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(allOrders)
+  });
+}
+
+async function clearOrders() {
+  allOrders = [];
+  await saveOrders();
   renderOrders();
 }
 </script>
