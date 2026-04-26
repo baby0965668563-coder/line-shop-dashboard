@@ -11,20 +11,36 @@
   <pre id="output"></pre>
 
   <script>
-    function parseOrder() {
-      const text = document.getElementById("input").value;
-      const lines = text.split("\n");
-      let result = "";
+    async function parseOrder() {
+  const text = document.getElementById("input").value;
+  const lines = text.split("\n");
 
-      lines.forEach(line => {
-        const match = line.match(/(.+)\s+(.+)\+(\d+)/);
-        if (match) {
-          result += `${match[1]} 點了 ${match[2]} x${match[3]}\n`;
-        }
-      });
+  const res = await fetch("products.json");
+  const prices = await res.json();
 
-      document.getElementById("output").innerText = result || "沒有讀到訂單";
+  let result = "";
+  let total = 0;
+
+  lines.forEach(line => {
+    const match = line.match(/(.+)\s+(.+)\+(\d+)/);
+    if (match) {
+      const name = match[1];
+      const item = match[2];
+      const qty = parseInt(match[3]);
+
+      const price = prices[item] || 0;
+      const sum = price * qty;
+
+      total += sum;
+
+      result += `${name}｜${item} x${qty} = $${sum}\n`;
     }
+  });
+
+  result += "\n總金額：" + total;
+
+  document.getElementById("output").innerText = result;
+}
   </script>
 </body>
 </html>
