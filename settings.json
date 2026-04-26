@@ -1,0 +1,29 @@
+[
+  {
+    "id": "P001",
+    "code": "DOG-M",
+    "name": "大耳狗喜拿 毛絨玩偶 M款",
+    "price": 590,
+    "shipping": 60,
+    "status": "instock",
+    "createdAt": "2025-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "P002",
+    "code": "KUR-L",
+    "name": "庫洛米 造型抱枕 L款",
+    "price": 680,
+    "shipping": 60,
+    "status": "preorder",
+    "createdAt": "2025-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "P003",
+    "code": "KIT-S",
+    "name": "Hello Kitty 玩偶 S款",
+    "price": 450,
+    "shipping": 60,
+    "status": "instock",
+    "createdAt": "2025-04-01T00:00:00.000Z"
+  }
+]
