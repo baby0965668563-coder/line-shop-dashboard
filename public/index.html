@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>訂單系統</title>
 
 <style>
@@ -21,11 +22,12 @@ textarea {
 }
 
 button {
-  padding: 10px 20px;
+  padding: 8px 12px;
   background: #c8a97e;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
+  margin-right: 5px;
 }
 
 .card {
@@ -33,6 +35,11 @@ button {
   padding: 15px;
   margin-top: 15px;
   border-radius: 12px;
+}
+
+.status {
+  margin-top: 5px;
+  font-weight: bold;
 }
 
 .total {
@@ -56,15 +63,16 @@ button {
 <div class="total" id="total"></div>
 
 <script>
-async function parseOrder() {
+let allOrders = [];
 
+async function parseOrder() {
   const res = await fetch("products.json");
   const prices = await res.json();
 
   const text = document.getElementById("input").value;
   const lines = text.split("\n");
 
-  let html = "";
+  allOrders = [];
   let total = 0;
 
   lines.forEach(line => {
@@ -79,20 +87,41 @@ async function parseOrder() {
 
       total += sum;
 
-      html += `
-        <div class="card">
-          <b>${name}</b><br>
-          商品：${item}<br>
-          數量：${qty}<br>
-          金額：$${sum}<br>
-          狀態：待對帳
-        </div>
-      `;
+      allOrders.push({
+        name, item, qty, sum, status: "待對帳"
+      });
     }
   });
 
-  document.getElementById("orders").innerHTML = html;
+  renderOrders();
   document.getElementById("total").innerText = "總金額：" + total;
+}
+
+function renderOrders(){
+  let html = "";
+
+  allOrders.forEach((o, i) => {
+    html += `
+      <div class="card">
+        <b>${o.name}</b><br>
+        商品：${o.item}<br>
+        數量：${o.qty}<br>
+        金額：$${o.sum}<br>
+
+        <div class="status">狀態：${o.status}</div>
+
+        <button onclick="setStatus(${i}, '已結單')">已結單</button>
+        <button onclick="setStatus(${i}, '已寄出')">已寄出</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("orders").innerHTML = html;
+}
+
+function setStatus(index, status){
+  allOrders[index].status = status;
+  renderOrders();
 }
 </script>
 
