@@ -1,14 +1,33 @@
 const express = require('express');
-const app = express();
+const fs = require('fs');
+const path = require('path');
 
-// 讓 public 裡的東西可以被讀到
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
 app.use(express.static('public'));
 
-// 👉 加這段（關鍵）
+const dataDir = path.join(__dirname, 'data');
+const ordersFile = path.join(dataDir, 'orders.json');
+
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+if (!fs.existsSync(ordersFile)) fs.writeFileSync(ordersFile, '[]');
+
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(3000, () => {
-  console.log('Server running');
+app.get('/api/orders', (req, res) => {
+  const orders = JSON.parse(fs.readFileSync(ordersFile, 'utf8'));
+  res.json(orders);
+});
+
+app.post('/api/orders', (req, res) => {
+  fs.writeFileSync(ordersFile, JSON.stringify(req.body, null, 2));
+  res.json({ ok: true });
+});
+
+app.listen(PORT, () => {
+  console.log('Server running on port ' + PORT);
 });
